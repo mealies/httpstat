@@ -5,24 +5,29 @@ on:
   pull_request:
     branches:
       - main
+
 name: Push
 jobs:
-  test:
-    runs-on: ubuntu-latest
+  ci:
+    name: "Run CI"
+    strategy:
+      fail-fast: false
+      matrix:
+        os:  ["windows-latest", "ubuntu-latest", "macOS-latest"]
+        go:  ["1.22.x", "1.23.x"]
+    runs-on: ${{ matrix.os }}
     steps:
-    - name: Install Go
-      uses: actions/setup-go@v5
-      with:
-        go-version: 1.23.x
-    - name: Checkout code
-      uses: actions/checkout@v4
-    - name: Test
-      run: go test -race ./...
-    - name: Vet
-      run: go vet ./...
-    - name: Mod verify
-      run: go mod verify
-    - name: Staticcheck
-      run: |
-        go get honnef.co/go/tools/cmd/staticcheck
-        staticcheck ./...
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      - uses: WillAbides/setup-go-faster@v1.14.0
+        with:
+          go-version: ${{ matrix.go }}
+      - run: "go test ./..."
+      - run: "go vet ./..."
+      - run: "go mod verify"
+      - uses: dominikh/staticcheck-action@v1
+        with:
+          version: "latest"
+          install-go: false
+          cache-key: ${{ matrix.go }}
