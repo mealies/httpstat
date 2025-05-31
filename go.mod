@@ -1,4 +1,4 @@
-module httpstat-h3
+module github.xom/mealies/httpstat
 
 go 1.23
 
